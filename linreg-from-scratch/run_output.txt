@@ -1,0 +1,36 @@
+Loaded 20640 rows, 10 columns
+Missing values:
+ total_bedrooms    207
+dtype: int64 
+
+=== Simple (median_income only) ===
+lr=0.1, iters=500, final train cost=0.261504
+                             MSE        R2
+From scratch    7,091,157,771.77  0.458859
+sklearn         7,091,157,771.77  0.458859
+max |coef difference| (standardized space): 3.33e-16
+intercept: scratch=-0.000000  sklearn=-0.000000
+
+=== Multiple (12 features) ===
+lr=0.3, iters=5000, final train cost=0.175168
+                             MSE        R2
+From scratch    4,908,290,571.31  0.625438
+sklearn         4,908,290,571.35  0.625438
+max |coef difference| (standardized space): 6.42e-11
+intercept: scratch=0.000000  sklearn=0.000000
+
+Coefficients (standardized features):
+                   feature  scratch  sklearn
+                 longitude -0.46555 -0.46555
+                  latitude -0.47065 -0.47065
+        housing_median_age  0.12013  0.12013
+               total_rooms -0.11325 -0.11325
+            total_bedrooms  0.37250  0.37250
+                population -0.37540 -0.37540
+                households  0.15899  0.15899
+             median_income  0.65013  0.65013
+    ocean_proximity_INLAND -0.16006 -0.16006
+    ocean_proximity_ISLAND  0.01832  0.01832
+  ocean_proximity_NEAR BAY -0.01403 -0.01403
+ocean_proximity_NEAR OCEAN  0.00986  0.00986
+Saved cost_convergence.png, learning_rates.png, simple_fit.png
