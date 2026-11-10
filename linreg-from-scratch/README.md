@@ -19,43 +19,36 @@ Run it: `pip install -r requirements.txt && python train.py`
 
 ## The math
 
-**Hypothesis.** Put a column of ones in front of the feature matrix `X` (so the intercept is just another weight). The prediction for all `m` examples at once is a matrix product:
+Let `m` be the number of training samples, `X` the feature matrix with an extra column of ones added, `y` the actual target values, and `θ` the vector of parameters (`θ₀` is the intercept).
 
-```
-h(X) = X θ
-```
+**Hypothesis.** The model's prediction is just a weighted sum of the features: `h(X) = Xθ`. I add a column of ones to `X` so the intercept `θ₀` gets handled by the same matrix multiplication, which means the exact same code works for one feature (simple regression) or many (multiple regression).
 
-**Cost (MSE).** How wrong are we on average? Take each error `h − y`, square it so over- and under-predictions both count and big misses are punished more, and average:
+**Cost function.** To know how good a set of parameters is, I use mean squared error:
 
-```
-J(θ) = (1 / 2m) · Σ (Xθ − y)²
-```
+    J(θ) = 1/(2m) · Σ (Xθ − y)²
 
-The extra `1/2` is only there so it cancels the `2` that appears when we differentiate.
+For each sample I take the gap between the prediction and the real value, square it (so negatives don't cancel positives and big mistakes count more), and average over all samples. The extra ½ is only there to make the derivative cleaner. For linear regression this cost is bowl-shaped (convex), so there are no bad local minima for gradient descent to get stuck in.
 
-**Gradient.** Differentiating `J` with respect to `θ`: the square brings down a 2, and the chain rule multiplies by `X`:
+**Gradient.** I need to know how the cost changes when I nudge each parameter. Taking the derivative, the chain rule brings in `X` (because the error depends on θ through `Xθ`), and the 2 from the square cancels the ½, giving:
 
-```
-∂J/∂θ = (1/m) · Xᵀ (Xθ − y)
-```
+    ∇J(θ) = 1/m · Xᵀ(Xθ − y)
 
-Each entry says how much the cost changes if that weight is nudged up. The cost is a bowl-shaped (convex) function of `θ`, so there is one minimum and following the slope downhill finds it.
+In words: for each parameter, I look at every sample's error, weight it by that sample's feature value, and average. If a feature tends to be large when I'm overpredicting, its parameter gets pushed down.
 
-**Gradient descent.** Repeatedly step opposite the gradient, by a size set by the learning rate α:
+**Gradient descent update.** I repeat this step many times:
 
-```
-θ := θ − α · (1/m) · Xᵀ (Xθ − y)
-```
+    θ := θ − α · ∇J(θ)
 
-The cost is stored every iteration, which gives the convergence plot.
+The gradient points uphill, so I subtract it to move downhill. The learning rate `α` controls the step size: too big and the cost bounces around or blows up, too small and training takes forever. I record the cost at every iteration to confirm it keeps going down, which is what the cost plot below shows.
 
-**Evaluation metrics (computed manually):**
+**Why I standardize.** If features have very different scales, the cost surface becomes a long narrow valley and gradient descent zigzags and needs a tiny learning rate. Subtracting the mean and dividing by the standard deviation (computed on the training data only, to avoid leaking test information) makes the surface rounder, so one learning rate works for all parameters. I standardize the target the same way and convert predictions back to dollars before computing MSE and R². Standardizing does not remove correlation between features, which is why the multiple regression, with its correlated room, bedroom, household and population features, needed more iterations than the simple one.
 
-```
-MSE = mean((y − ŷ)²)
-R²  = 1 − Σ(y − ŷ)² / Σ(y − ȳ)²
-```
+**Evaluation metrics.** I compute these by hand:
 
+    MSE = mean((y − ŷ)²)
+    R²  = 1 − Σ(y − ŷ)² / Σ(y − ȳ)²
+
+MSE is the average squared error on the test set. R² compares my model's error to the error of just predicting the average every time: 1 means perfect, 0 means no better than the average, and it can go negative on test data if the model does worse than the average.
 ## Preprocessing
 
 - `total_bedrooms` has 207 missing values, filled with the **training-set median**.
